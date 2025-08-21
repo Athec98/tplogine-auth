@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
-    <link rel="stylesheet" href="Connexion.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="bodyconnexion">
     <div class="login-container">
         <div class="logo">
             <h1>Connexion</h1>
@@ -16,25 +16,24 @@
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="text" id="email" name="email" placeholder="Entrez votre email" required autocomplete="off">
-                <div class="error-message" id="emailError"></div>
+                <input type="text" id="login_email" name="email" placeholder="Entrez votre email" required autocomplete="off">
+                <div class="error-message" id="loginEmailError"></div>
             </div>
             
-          <div class="form-group">
+            <div class="form-group">
                 <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required autocomplete="off">
-                <div class="error-message" id="passwordError"></div>
+                <input type="password" id="login_password" name="password" placeholder="Entrez votre mot de passe" required autocomplete="off">
+                <button type="button" id="toggleLoginPassword" class="password-toggle">👁️</button>
+                <div class="error-message" id="loginPasswordError"></div>
             </div>
             
             <button type="submit" id="loginButton">Se connecter</button>
             
-            <div class="error-message" id="generalError"></div>
-            <div class="success-message" id="successMessage">Connexion réussie! Redirection vers l'accueil...</div>
-            <div class="loader" id="loader">
-            </div>
+            <div class="error-message" id="loginGeneralError"></div>
+            <div class="success-message" id="loginSuccessMessage">Connexion réussie! Redirection vers l'accueil...</div>
+            <div class="loader" id="loader"></div>
         </form>
-        
-        
+    </div>
 
     <script src="script.js"></script>
 </body>
