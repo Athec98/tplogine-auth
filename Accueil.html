@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Membres</title>
+    <link rel="stylesheet" href="Accueil.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Gestion des Membres</h1>
+            <p class="description">Ajoutez et gérez les membres de votre organisation</p>
+        </header>
+
+        <div class="form-container">
+            <h2 class="form-title">Ajouter un nouveau membre</h2>
+            <form id="memberForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nom_complet">Nom Complet *</label>
+                        <input type="text" id="nom_complet" name="nom_complet" placeholder="Prénom et Nom">
+                        <div class="error" id="nom_complet_error">Veuillez entrer un nom complet valide</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Adresse Email *</label>
+                        <input type="email" id="email" name="email" placeholder="exemple@email.com">
+                        <div class="error" id="email_error">Veuillez entrer une adresse email valide</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Mot de Passe *</label>
+                        <input type="password" id="password" name="password" placeholder="Créez un mot de passe">
+                        <div class="error" id="password_error">Le mot de passe doit contenir au moins 6 caractères</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirmation du Mot de Passe *</label>
+                        <input type="password" id="confirm_password" name="confirm_password"
+                            placeholder="Confirmez votre mot de passe">
+                        <div class="error" id="confirm_password_error">Les mots de passe ne correspondent pas</div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn">Ajouter le membre</button>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2 style="padding: 20px 20px 0; color: #4a6fc7;">Liste des membres</h2>
+            <table id="membersTable">
+                <thead>
+                    <tr>
+                        <th>Nom Complet</th>
+                        <th>Email</th>
+                        <th>Date de creation</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="membersList">
+                    <tr>
+                        <td colspan="4" class="no-members">Aucun membre ajouté pour le moment</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const memberForm = document.getElementById('memberForm');
+            const membersList = document.getElementById('membersList');
+            let members = [];
+
+            // Charger les membres depuis le localStorage s'ils existent
+            if (localStorage.getItem('members')) {
+                members = JSON.parse(localStorage.getItem('members'));
+                renderMembers();
+            }
+
+            // Gestion de la soumission du formulaire
+            memberForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (validateForm()) {
+                    addMember();
+                    memberForm.reset();
+                }
+            });
+
+            // Fonction de validation du formulaire
+            function validateForm() {
+                let isValid = true;
+
+                // Validation du nom complet
+                const nomComplet = document.getElementById('nom_complet').value.trim();
+                if (nomComplet === '' || nomComplet.length < 3) {
+                    showError('nom_complet_error', 'Veuillez entrer un nom complet valide (au moins 3 caractères)');
+                    isValid = false;
+                } else {
+                    hideError('nom_complet_error');
+                }
+
+                // Validation de l'email
+                const email = document.getElementById('email').value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showError('email_error', 'Veuillez entrer une adresse email valide');
+                    isValid = false;
+                } else {
+                    hideError('email_error');
+                }
+
+                // Validation du mot de passe
+                const password = document.getElementById('password').value;
+                if (password.length < 6) {
+                    showError('password_error', 'Le mot de passe doit contenir au moins 6 caractères');
+                    isValid = false;
+                } else {
+                    hideError('password_error');
+                }
+
+                // Validation de la confirmation du mot de passe
+                const confirmPassword = document.getElementById('confirm_password').value;
+                if (password !== confirmPassword) {
+                    showError('confirm_password_error', 'Les mots de passe ne correspondent pas');
+                    isValid = false;
+                } else {
+                    hideError('confirm_password_error');
+                }
+
+                return isValid;
+            }
+
+            // Fonction pour afficher une erreur
+            function showError(id, message) {
+                const errorElement = document.getElementById(id);
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            // Fonction pour cacher une erreur
+            function hideError(id) {
+                const errorElement = document.getElementById(id);
+                errorElement.style.display = 'none';
+            }
+
+            // Récupérer la date de création
+            const creationDate = new Date().toLocaleString('fr-FR');
+
+            // Fonction pour ajouter un membre
+            function addMember() {
+                const nomComplet = document.getElementById('nom_complet').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                const newMember = {
+                    id: Date.now(), // ID unique basé sur le timestamp
+                    nom_complet: nomComplet,
+                    email: email,
+                    password: password, // En pratique, il faudrait hasher le mot de passe
+                    creation_date: creationDate,
+                    statut: true // Statut actif par défaut
+                };
+
+                members.push(newMember);
+                saveMembers();
+                renderMembers();
+
+                // Message de succès
+                alert(`Membre ${nomComplet} ajouté avec succès !`);
+            }
+
+            // Fonction pour sauvegarder les membres dans le localStorage
+            function saveMembers() {
+                localStorage.setItem('members', JSON.stringify(members));
+            }
+
+            // Fonction pour afficher les membres dans le tableau
+            function renderMembers() {
+                if (members.length === 0) {
+                    membersList.innerHTML = '<tr><td colspan="4" class="no-members">Aucun membre ajouté pour le moment</td></tr>';
+                    return;
+                }
+
+                membersList.innerHTML = '';
+
+                members.forEach(member => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${member.nom_complet}</td>
+                        <td>${member.email}</td>
+                        <td>${member.creation_date}</td>
+                        <td>
+                            <span class="${member.statut ? 'status-active' : 'status-inactive'}">
+                                ${member.statut ? 'Actif' : 'Inactif'}
+                            </span>
+                            <input type="checkbox" ${member.statut ? 'checked' : ''} 
+                                class="status-checkbox" 
+                                data-id="${member.id}"
+                                onchange="toggleStatus(${member.id})">
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="deleteMember(${member.id})">Supprimer</button>
+                        </td>
+                    `;
+
+                    membersList.appendChild(row);
+                });
+            }
+
+            // Fonction pour basculer le statut d'un membre (exposée globalement)
+            window.toggleStatus = function (id) {
+                members = members.map(member => {
+                    if (member.id === id) {
+                        return { ...member, statut: !member.statut };
+                    }
+                    return member;
+                });
+
+                saveMembers();
+                renderMembers();
+
+                const member = members.find(m => m.id === id);
+                const status = member.statut ? 'activé' : 'désactivé';
+                alert(`Statut de ${member.nom_complet} ${status} avec succès !`);
+            };
+
+            // Fonction pour supprimer un membre (exposée globalement)
+            window.deleteMember = function (id) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) {
+                    const memberIndex = members.findIndex(m => m.id === id);
+                    const memberName = members[memberIndex].nom_complet;
+
+                    members.splice(memberIndex, 1);
+                    saveMembers();
+                    renderMembers();
+
+                    alert(`Membre ${memberName} supprimé avec succès !`);
+                }
+            };
+        });
+    </script>
+</body>
+
+</html>
